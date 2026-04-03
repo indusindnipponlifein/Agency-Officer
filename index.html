@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Agency Officer — Performance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --maroon:       #7D1128;
+  --maroon-deep:  #4A0817;
+  --maroon-mid:   #9E1535;
+  --maroon-light: #C4294A;
+  --maroon-pale:  #F7EDEF;
+  --maroon-ghost: rgba(125,17,40,.05);
+  --maroon-glow:  rgba(125,17,40,.18);
+  --maroon-line:  rgba(125,17,40,.12);
+  --bg:      #F2F0EC;
+  --bg-dot:  #E8E5DF;
+  --surface: #FFFFFF;
+  --border:  #E2DDD6;
+  --border2: #CBC5BC;
+  --g50:  #F8F6F3;
+  --g100: #F0EDE8;
+  --g200: #E2DDD6;
+  --g300: #C8C2BA;
+  --g400: #9E9890;
+  --g500: #6B6460;
+  --g600: #3D3836;
+  --text:  #1A1614;
+  --sub:   #6B6460;
+  --muted: #A09890;
+  --ok:      #15803D;
+  --ok-bg:   rgba(21,128,61,.08);
+  --ok-bdr:  rgba(21,128,61,.18);
+  --bad:     #B91C1C;
+  --bad-bg:  rgba(185,28,28,.08);
+  --warn:    #92400E;
+  --warn-bg: rgba(146,64,14,.08);
+  --blue:    #1D4ED8;
+  --blue-bg: rgba(29,78,216,.08);
+  --ff-serif: 'Instrument Serif', Georgia, serif;
+  --ff-body:  'IBM Plex Sans', system-ui, sans-serif;
+  --ff-mono:  'IBM Plex Mono', 'Courier New', monospace;
+  --r:    12px;
+  --r-sm: 8px;
+  --r-xs: 5px;
+  --sh-xs: 0 1px 3px rgba(26,22,20,.04), 0 1px 8px rgba(26,22,20,.04);
+  --sh-sm: 0 2px 8px rgba(26,22,20,.05), 0 1px 3px rgba(26,22,20,.04);
+  --sh:    0 4px 20px rgba(26,22,20,.08), 0 1px 4px rgba(26,22,20,.04);
+  --sh-lg: 0 16px 48px rgba(26,22,20,.14);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(var(--bg-dot) 1.2px,transparent 1.2px);
+  background-size:22px 22px;
+  color:var(--text);font-family:var(--ff-body);font-size:13.5px;line-height:1.6;min-height:100vh;
+}
+button{font-family:var(--ff-body);cursor:pointer;border:none}
+input{font-family:var(--ff-body)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--g200);border-radius:2px}
+
+/* TOPBAR */
+.topbar{
+  position:sticky;top:0;z-index:200;
+  background:var(--maroon-deep);
+  height:54px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  box-shadow:0 1px 0 rgba(255,255,255,.05),0 4px 24px rgba(74,8,23,.5);
+}
+.topbar::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0px,rgba(255,255,255,.012) 1px,transparent 1px,transparent 32px);
+}
+.brand{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.brand-mark{
+  width:32px;height:32px;border-radius:7px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.9);
+}
+.brand-name{font-family:var(--ff-serif);font-size:17px;color:#fff;letter-spacing:.1px}
+.brand-name span{color:rgba(255,255,255,.38);font-style:italic}
+.topbar-right{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.update-chip{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:6px;padding:6px 13px;
+}
+.update-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.7);flex-shrink:0}
+.update-chip-label{font-size:9px;font-weight:600;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.3px;white-space:nowrap}
+.update-chip-val{font-size:11px;font-weight:500;color:rgba(255,255,255,.72);font-family:var(--ff-mono);white-space:nowrap}
+
+/* LAYOUT */
+.main{max-width:1200px;margin:0 auto;padding:28px 24px 80px}
+
+/* SEARCH CARD */
+.search-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:32px;margin-bottom:20px;box-shadow:var(--sh);
+  position:relative;overflow:hidden;animation:rise .4s ease both;
+}
+.search-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--maroon-deep),var(--maroon-light),transparent)}
+.search-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:9.5px;font-weight:600;color:var(--maroon);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+.eyebrow-line{width:20px;height:1.5px;background:var(--maroon);border-radius:1px}
+.search-card h2{font-family:var(--ff-serif);font-size:26px;color:var(--text);margin-bottom:4px;line-height:1.2}
+.search-card h2 em{color:var(--maroon);font-style:italic}
+.search-card .desc{color:var(--sub);font-size:13px;margin-bottom:24px;max-width:480px}
+.search-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.input-wrap{flex:1;min-width:200px}
+.input-wrap label{display:block;font-size:11px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.input-wrap input{
+  width:100%;background:var(--g50);border:1.5px solid var(--border);color:var(--text);
+  padding:11px 16px;border-radius:var(--r-sm);
+  font-size:16px;font-family:var(--ff-mono);
+  outline:none;letter-spacing:.3px;
+  transition:border-color .18s,box-shadow .18s;
+}
+.input-wrap input:focus{border-color:var(--maroon);box-shadow:0 0 0 3px var(--maroon-ghost)}
+.input-wrap input::placeholder{color:var(--muted);font-family:var(--ff-body);font-size:14px}
+.btn-primary{
+  background:var(--maroon);color:#fff;padding:11px 26px;border-radius:var(--r-sm);
+  font-weight:600;font-size:13.5px;letter-spacing:.2px;
+  display:inline-flex;align-items:center;gap:7px;
+  transition:background .18s,box-shadow .18s,transform .1s;white-space:nowrap;
+}
+.btn-primary:hover{background:var(--maroon-mid);box-shadow:0 4px 16px var(--maroon-glow)}
+.btn-primary:active{transform:scale(.97)}
+.btn-primary:disabled{opacity:.35;pointer-events:none}
+.btn-ghost{
+  background:transparent;color:var(--sub);border:1.5px solid var(--border2);
+  padding:11px 18px;border-radius:var(--r-sm);font-weight:500;font-size:13.5px;
+  transition:all .18s;
+}
+.btn-ghost:hover{color:var(--text);border-color:var(--g500);background:var(--g50)}
+
+/* PLACEHOLDER */
+#placeholder{text-align:center;padding:72px 20px;animation:fade .5s ease both}
+.ph-icon{width:64px;height:64px;border-radius:16px;background:var(--g100);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--g400)}
+#placeholder h3{font-family:var(--ff-serif);font-size:22px;color:var(--g600);margin-bottom:8px}
+#placeholder p{font-size:12.5px;color:var(--sub);max-width:360px;margin:0 auto;line-height:1.7}
+
+/* SECTION CARDS */
+.scard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;box-shadow:var(--sh-xs);overflow:hidden;transition:box-shadow .2s}
+.scard:hover{box-shadow:var(--sh-sm)}
+.scard:nth-child(1){animation:rise .35s .04s ease both}
+.scard:nth-child(2){animation:rise .35s .08s ease both}
+.scard:nth-child(3){animation:rise .35s .12s ease both}
+.scard:nth-child(4){animation:rise .35s .16s ease both}
+.scard:nth-child(5){animation:rise .35s .20s ease both}
+.scard-head{
+  padding:16px 22px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none;border-bottom:1px solid var(--border);
+  transition:background .15s;position:relative;
+}
+.scard-head::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0;background:transparent;transition:background .2s}
+.scard-head.open::before{background:var(--maroon)}
+.scard-head:hover{background:var(--g50)}
+.scard-head.closed{border-bottom-color:transparent}
+.scard-htitle{display:flex;align-items:center;gap:13px}
+.scard-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--g100);border:1px solid var(--border);color:var(--g500);transition:all .2s}
+.scard-head.open .scard-icon,.scard-head:hover .scard-icon{background:var(--maroon-pale);border-color:var(--maroon-line);color:var(--maroon)}
+.scard-htxt h3{font-size:14px;font-weight:600;color:var(--text)}
+.scard-htxt .sub{font-size:11px;color:var(--sub);margin-top:1px}
+.scard-chev{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .25s;background:var(--g50)}
+.scard-chev svg{transition:transform .25s}
+.scard-chev.open svg{transform:rotate(180deg)}
+.scard-body{padding:22px}
+
+/* KV GRID */
+.kv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(164px,1fr));gap:9px}
+.kv{background:var(--g50);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;transition:border-color .18s}
+.kv:hover{border-color:var(--border2)}
+.kv-label{font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.kv-val{font-size:13.5px;font-weight:600;color:var(--text);font-family:var(--ff-mono);word-break:break-word}
+.kv-val.maroon{color:var(--maroon)}
+.kv-val.ok{color:var(--ok)}
+.kv-val.warn{color:var(--warn)}
+.badge-status{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--ff-body)}
+.badge-active{background:var(--ok-bg);color:var(--ok)}
+.badge-inactive{background:var(--bad-bg);color:var(--bad)}
+.badge-other{background:var(--g100);color:var(--g500)}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+/* BUSINESS PERFORMANCE — 4 METRIC CARDS */
+.biz-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.biz-card{
+  background:var(--g50);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:16px 18px;position:relative;overflow:hidden;
+  transition:border-color .18s,box-shadow .18s;
+}
+.biz-card:hover{border-color:var(--border2);box-shadow:var(--sh-xs)}
+.biz-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;border-radius:var(--r-sm) var(--r-sm) 0 0}
+.biz-card.c-maroon::before{background:var(--maroon)}
+.biz-card.c-grey::before{background:var(--g300)}
+.biz-card.c-ok::before{background:var(--ok)}
+.biz-card.c-slate::before{background:var(--g400)}
+.biz-period{
+  display:inline-flex;align-items:center;
+  font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:8px;border-radius:3px;padding:2px 7px;
+  background:var(--g200);color:var(--g500);
+}
+.biz-period.cur{background:var(--maroon);color:#fff}
+.biz-card-label{font-size:11px;font-weight:500;color:var(--sub);margin-bottom:8px;line-height:1.4}
+.biz-card-val{font-family:var(--ff-serif);font-size:28px;color:var(--text);line-height:1}
+.biz-card.c-maroon .biz-card-val{color:var(--maroon)}
+.biz-card.c-ok .biz-card-val{color:var(--ok)}
+.biz-card-sub{font-size:10.5px;color:var(--muted);margin-top:5px;font-family:var(--ff-mono)}
+
+/* Breakdown divider */
+.biz-divider{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.biz-divider-label{font-size:9.5px;font-weight:700;color:var(--maroon);text-transform:uppercase;letter-spacing:1.2px;white-space:nowrap}
+.biz-divider-line{flex:1;height:1px;background:var(--border)}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--g100);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;margin-bottom:14px}
+.tab{flex:1;padding:8px 12px;text-align:center;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;color:var(--sub);border:none;background:none}
+.tab.on{background:var(--surface);color:var(--maroon);font-weight:600;box-shadow:var(--sh-xs)}
+.tab:not(.on):hover{background:var(--g200);color:var(--text)}
+
+/* MOM TABLE — clean, no decorative bars */
+.mom-wrap{overflow-x:auto;border-radius:var(--r-sm);border:1px solid var(--border)}
+.mom-tbl{border-collapse:collapse;width:100%;min-width:960px;font-size:12px}
+.mom-tbl thead th{
+  background:var(--g100);padding:9px 12px;
+  font-weight:600;font-size:9.5px;color:var(--sub);
+  text-transform:uppercase;letter-spacing:.6px;
+  border-bottom:1px solid var(--border);white-space:nowrap;text-align:right;
+}
+.mom-tbl thead th:first-child{text-align:left;min-width:108px;position:sticky;left:0;z-index:3}
+.mom-tbl thead th.cur{background:var(--maroon-pale);color:var(--maroon)}
+.now-badge{display:block;font-size:7px;font-weight:800;letter-spacing:.6px;color:var(--maroon);margin-top:2px;text-transform:uppercase}
+.mom-tbl tbody td{
+  padding:9px 12px;border-bottom:1px solid rgba(226,221,214,.45);
+  text-align:right;color:var(--text);vertical-align:middle;font-family:var(--ff-mono);font-size:12px;
+}
+.mom-tbl tbody td:first-child{
+  text-align:left;font-weight:600;font-size:10px;color:var(--sub);
+  text-transform:uppercase;letter-spacing:.5px;font-family:var(--ff-body);
+  background:var(--g100);position:sticky;left:0;z-index:2;
+  border-right:1px solid var(--border);white-space:nowrap;
+}
+.mom-tbl tbody tr:last-child td{border-bottom:none}
+.mom-tbl tbody td.cur{background:rgba(125,17,40,.03);font-weight:600}
+.mom-tbl tbody tr:hover td{background:var(--maroon-ghost)}
+.mom-tbl tbody tr:hover td:first-child{background:var(--g200)}
+.tag{padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600;display:inline-block;font-family:var(--ff-body)}
+.tag-par{background:var(--warn-bg);color:var(--warn)}
+.tag-np{background:var(--blue-bg);color:var(--blue)}
+.tag-ul{background:var(--ok-bg);color:var(--ok)}
+
+/* L1 CARDS */
+.l1-list{display:flex;flex-direction:column;gap:8px}
+.l1-card{border:1px solid var(--border);border-radius:var(--r-sm);background:var(--g50);overflow:hidden;transition:border-color .18s,box-shadow .18s}
+.l1-card:hover{border-color:var(--maroon-line);box-shadow:var(--sh-xs)}
+.l1-head{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.l1-info{display:flex;align-items:center;gap:11px}
+.l1-avatar{width:38px;height:38px;border-radius:50%;background:var(--maroon-deep);border:1px solid rgba(125,17,40,.2);display:flex;align-items:center;justify-content:center;font-family:var(--ff-serif);font-size:13px;color:rgba(255,255,255,.9);flex-shrink:0}
+.l1-name{font-weight:600;font-size:13px;color:var(--text)}
+.l1-meta{font-size:11px;color:var(--sub);margin-top:1px;font-family:var(--ff-mono)}
+.l1-pills{display:flex;gap:7px;align-items:center}
+.l1-pill{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xs);padding:4px 10px;text-align:center}
+.l1-pill .pv{font-weight:700;font-size:12px;color:var(--text);font-family:var(--ff-mono)}
+.l1-pill .pl{font-size:9.5px;color:var(--sub);margin-top:1px}
+.l1-chev{color:var(--muted);transition:transform .25s;margin-left:6px}
+.l1-chev.open{transform:rotate(180deg)}
+.l1-body{padding:18px;border-top:1px solid var(--border);display:none}
+.l1-body.open{display:block;animation:rise .22s ease both}
+.sec-label{font-size:9.5px;font-weight:700;color:var(--maroon);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px;display:flex;align-items:center;gap:9px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+.mc-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px 14px;position:relative;overflow:hidden}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.mc.c-maroon::before{background:var(--maroon)}
+.mc.c-grey::before{background:var(--g300)}
+.mc.c-ok::before{background:var(--ok)}
+.mc.c-warn::before{background:var(--warn)}
+.mc-label{font-size:9.5px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.mc-val{font-family:var(--ff-serif);font-size:22px;color:var(--text);line-height:1}
+
+/* POLICY TABLE */
+
+/* PAGINATION */
+
+/* NOTICES */
+.empty{text-align:center;padding:36px 20px;color:var(--sub);display:none}
+.empty.on{display:block}
+.empty .eico{color:var(--g300);margin-bottom:12px}
+.empty h4{font-family:var(--ff-serif);color:var(--text);margin-bottom:4px;font-size:16px}
+.empty p{font-size:12px}
+
+/* OVERLAY */
+#overlay{position:fixed;inset:0;background:rgba(242,240,236,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:900;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#overlay.on{display:flex}
+.spinner{width:36px;height:36px;border:2.5px solid var(--g200);border-top-color:var(--maroon);border-radius:50%;animation:spin .65s linear infinite}
+.ov-title{font-family:var(--ff-serif);font-size:16px;color:var(--text)}
+.ov-sub{font-size:12px;color:var(--sub)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;z-index:1000;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 18px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh-lg);font-size:13px;min-width:220px;transform:translateY(60px) scale(.96);opacity:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .28s}
+#toast.show{transform:translateY(0) scale(1);opacity:1}
+#toast.err{border-left:3px solid var(--bad)}
+#toast.ok{border-left:3px solid var(--ok)}
+
+#personal-extra{display:none}
+#personal-extra.open{display:block;animation:rise .22s ease both}
+
+@keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:700px){
+  .biz-overview{grid-template-columns:1fr 1fr}
+  .mc-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .main{padding:16px 14px 60px}
+  .search-card{padding:22px 18px}
+  .scard-body{padding:16px}
+  .kv-grid{grid-template-columns:1fr 1fr}
+  .l1-pills{display:none}
+  .search-card h2{font-size:22px}
+    .update-chip{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div class="spinner"></div>
+  <div class="ov-title">Loading...</div>
+  <div class="ov-sub" id="ov-sub">Connecting…</div>
+</div>
+<div id="toast"><span id="toast-ico"></span><span id="toast-msg">Done.</span></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <div class="brand-name">Agency Officer</div>
+  </div>
+  <div class="topbar-right">
+    <div class="update-chip" id="update-chip" style="display:none">
+      <span class="update-dot"></span>
+      <span class="update-chip-label">Last Updated</span>
+      <span class="update-chip-val" id="update-chip-val">—</span>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="search-card">
+    <div class="search-eyebrow"><span class="eyebrow-line"></span>Agency Navjivan</div>
+    <h2>Agency Officer <em>Dashboard</em></h2>
+    <div class="search-row">
+      <div class="input-wrap">
+        <label>SAP Code</label>
+        <input type="text" id="sap-input" placeholder="e.g. 12345" autocomplete="off"
+          onkeydown="if(event.key==='Enter')fetchAO()"/>
+      </div>
+      <button class="btn-primary" id="search-btn" onclick="fetchAO()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Search
+      </button>
+      <button class="btn-ghost" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <div id="placeholder">
+    <div class="ph-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+      </svg>
+    </div>
+    <h3>Search by SAP Code</h3>
+    <p>Profile, business metrics, L1 mapping and month-on-month trends will load here.</p>
+  </div>
+
+  <div id="dashboard" style="display:none">
+
+    <!-- Profile -->
+    <div class="scard">
+      <div class="scard-head open" onclick="togCard('personal')">
+        <div class="scard-htitle">
+          <div class="scard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+          </div>
+          <div class="scard-htxt"><h3 id="ao-title">AO</h3><div class="sub" id="ao-sub">SAP —</div></div>
+        </div>
+        <div class="scard-chev open" id="chev-personal">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="scard-body" id="body-personal">
+        <div class="kv-grid" id="personal-summary"></div>
+        <div id="personal-extra"><hr class="hr"/><div class="kv-grid" id="personal-more"></div></div>
+        <button class="btn-ghost" style="margin-top:14px;font-size:12px;padding:7px 14px" onclick="togExtra(this)" id="extra-btn">Show more ↓</button>
+      </div>
+    </div>
+
+    <!-- Business Performance -->
+    <div class="scard">
+      <div class="scard-head open" onclick="togCard('business')">
+        <div class="scard-htitle">
+          <div class="scard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/>
+            </svg>
+          </div>
+          <div class="scard-htxt"><h3>Business Performance</h3><div class="sub" id="biz-period-sub">FY26 · MTD Highlighted</div></div>
+        </div>
+        <div class="scard-chev open" id="chev-business">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="scard-body" id="body-business">
+        <div class="biz-overview">
+          <div class="biz-card c-maroon">
+            <div class="biz-period">FY26</div>
+            <div class="biz-card-label">YTD WRP</div>
+            <div class="biz-card-val" id="fy-wrp-val">—</div>
+            
+          </div>
+          <div class="biz-card c-grey">
+            <div class="biz-period">FY26</div>
+            <div class="biz-card-label">YTD NOP</div>
+            <div class="biz-card-val" id="fy-nop-val">—</div>
+            
+          </div>
+          <div class="biz-card c-ok">
+            <div class="biz-period cur" id="mtd-wrp-tag">MTD</div>
+            <div class="biz-card-label">MTD WRP</div>
+            <div class="biz-card-val" id="mtd-wrp-val">—</div>
+            
+          </div>
+          <div class="biz-card c-slate">
+            <div class="biz-period cur" id="mtd-nop-tag">MTD</div>
+            <div class="biz-card-label">MTD NOP</div>
+            <div class="biz-card-val" id="mtd-nop-val">—</div>
+            
+          </div>
+        </div>
+        <div class="biz-divider">
+          <span class="biz-divider-label">Business Breakdown</span>
+          <span class="biz-divider-line"></span>
+        </div>
+        <div class="tabs">
+          <button class="tab on" onclick="bizTab('self',this)">Self-Sourced</button>
+          <button class="tab"    onclick="bizTab('l1',this)">Direct L1</button>
+        </div>
+        <div class="kv-grid" id="biz-tab"></div>
+      </div>
+    </div>
+
+    <!-- L1 Mapping -->
+    <div class="scard">
+      <div class="scard-head open" onclick="togCard('l1')">
+        <div class="scard-htitle">
+          <div class="scard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/>
+              <line x1="8.4" y1="10.7" x2="15.6" y2="6.3"/><line x1="8.4" y1="13.3" x2="15.6" y2="17.7"/>
+            </svg>
+          </div>
+          <div class="scard-htxt"><h3>L1 Mapping</h3><div class="sub" id="l1-sub">Insurance Managers</div></div>
+        </div>
+        <div class="scard-chev open" id="chev-l1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="scard-body" id="body-l1">
+        <div class="l1-list" id="l1-list"></div>
+      </div>
+    </div>
+
+    <!-- Month-on-Month -->
+    <div class="scard">
+      <div class="scard-head open" onclick="togCard('mom')">
+        <div class="scard-htitle">
+          <div class="scard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="17 7 22 7 22 12"/>
+            </svg>
+          </div>
+          <div class="scard-htxt"><h3>Month-on-Month Performance</h3><div class="sub">Apr-25 → Mar-26</div></div>
+        </div>
+        <div class="scard-chev open" id="chev-mom">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="scard-body" id="body-mom">
+        <div class="mom-wrap"><table class="mom-tbl" id="mom-table"></table></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbx4rZ1jEVdZPcz3-PuaIW5KGRqHzWFHI1v--s1_i93SDPRmkz6X63pf4dg4ZernGZ0Z/exec';
+
+const MONTHS=[
+  {key:'Apr',lbl:'Apr-25',wrp:'Apr-25 WRP',nop:'Apr-25 NOP',ss:'Apr-25 SS NOP',l1h:'Apr-25 L1 Hired',par:'Apr-25 PAR',np:'Apr-25 NON-PAR',ul:'Apr-25 UL',im_wrp:'Apr-25 WRP',im_nop:'Apr-25 NOP'},
+  {key:'May',lbl:'May-25',wrp:'May-25 WRP',nop:'May-25 NOP',ss:'May-25 SS NOP',l1h:'May-25 L1 Hired',par:'May-25 PAR',np:'May-25 NON-PAR',ul:'May-25 UL',im_wrp:'May-25 WRP',im_nop:'May-25 NOP'},
+  {key:'Jun',lbl:'Jun-25',wrp:'Jun-25 WRP',nop:'Jun-25 NOP',ss:'Jun-25 SS NOP',l1h:'Jun-25 L1 Hired',par:'Jun-25 PAR',np:'Jun-25 NON-PAR',ul:'Jun-25 UL',im_wrp:'Jun-25 WRP',im_nop:'Jun-25 NOP'},
+  {key:'Jul',lbl:'Jul-25',wrp:'Jul-25 WRP',nop:'Jul-25 NOP',ss:'Jul-25 SS NOP',l1h:'Jul-25 L1 Hired',par:'Jul-25 PAR',np:'Jul-25 NON-PAR',ul:'Jul-25 UL',im_wrp:'Jul-25 WRP',im_nop:'Jul-25 NOP'},
+  {key:'Aug',lbl:'Aug-25',wrp:'Aug-25 WRP',nop:'Aug-25 NOP',ss:'Aug-25 SS NOP',l1h:'Aug-25 L1 Hired',par:'Aug-25 PAR',np:'Aug-25 NON-PAR',ul:'Aug-25 UL',im_wrp:'Aug-25 WRP',im_nop:'Aug-25 NOP'},
+  {key:'Sep',lbl:'Sep-25',wrp:'Sep-25 WRP',nop:'Sep-25 NOP',ss:'Sep-25 SS NOP',l1h:'Sep-25 L1 Hired',par:'Sep-25 PAR',np:'Sep-25 NON-PAR',ul:'Sep-25 UL',im_wrp:'Sep-25 WRP',im_nop:'Sep-25 NOP'},
+  {key:'Oct',lbl:'Oct-25',wrp:'Oct-25 WRP',nop:'Oct-25 NOP',ss:'Oct-25 SS NOP',l1h:'Oct-25 L1 Hired',par:'Oct-25 PAR',np:'Oct-25 NON-PAR',ul:'Oct-25 UL',im_wrp:'Oct-25 WRP',im_nop:'Oct-25 NOP'},
+  {key:'Nov',lbl:'Nov-25',wrp:'Nov-25 WRP',nop:'Nov-25 NOP',ss:'Nov-25 SS NOP',l1h:'Nov-25 L1 Hired',par:'Nov-25 PAR',np:'Nov-25 NON-PAR',ul:'Nov-25 UL',im_wrp:'Nov-25 WRP',im_nop:'Nov-25 NOP'},
+  {key:'Dec',lbl:'Dec-25',wrp:'Dec-25 WRP',nop:'Dec-25 NOP',ss:'Dec-25 SS NOP',l1h:'Dec-25 L1 Hired',par:'Dec-25 PAR',np:'Dec-25 NON-PAR',ul:'Dec-25 UL',im_wrp:'Dec-25 WRP',im_nop:'Dec-25 NOP'},
+  {key:'Jan',lbl:'Jan-26',wrp:'Jan-26 WRP',nop:'Jan-26 NOP',ss:'Jan-26 SS NOP',l1h:'Jan-26 L1 Hired',par:'Jan-26 PAR',np:'Jan-26 NON-PAR',ul:'Jan-26 UL',im_wrp:'Jan-26 WRP',im_nop:'Jan-26 NOP'},
+  {key:'Feb',lbl:'Feb-26',wrp:'Feb-26 WRP',nop:'Feb-26 NOP',ss:'Feb-26 SS NOP',l1h:'Feb-26 L1 Hired',par:'Feb-26 PAR',np:'Feb-26 NON-PAR',ul:'Feb-26 UL',im_wrp:'Feb-26 WRP',im_nop:'Feb-26 NOP'},
+  {key:'Mar',lbl:'Mar-26',wrp:'Mar-26 WRP',nop:'Mar-26 NOP',ss:'Mar-26 SS NOP',l1h:'Mar-26 L1 Hired',par:'Mar-26 PAR',np:'Mar-26 NON-PAR',ul:'Mar-26 UL',im_wrp:'Mar-26 WRP',im_nop:'Mar-26 NOP'},
+];
+
+/* ─────────────────────────────────────────────────────────────
+   MTD MONTH CONFIG
+   Change MTD_KEY to the 3-letter month abbreviation you want
+   as the "current" month for MTD figures.
+   Valid values: 'Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'
+   ───────────────────────────────────────────────────────────── */
+const MTD_KEY = 'Mar';   // ← change this to update MTD month
+
+const CURRENT_MONTH = MONTHS.find(m => m.key === MTD_KEY) || MONTHS[MONTHS.length - 1];
+
+
+let AO=null,L1S=[];
+let curBizTab='self',curPage=1,sortCol=null,sortDir=1;
+const PAGE_SIZE=50;
+
+const g=(o,k,fb='—')=>(o&&o[k]!=null&&o[k]!=='')?o[k]:fb;
+const fmt=v=>(v!=null&&v!=='')?v:'—';
+const fmtN=v=>{
+  const n=parseFloat(v);
+  if(isNaN(n)||v===''||v==null)return '—';
+  if(n===0)return '0';
+  if(n>=1e7)return(n/1e7).toFixed(2)+' Cr';
+  if(n>=1e5)return(n/1e5).toFixed(2)+' L';
+  return n.toLocaleString('en-IN');
+};
+const pct=(num,den)=>{
+  const n=parseFloat(num),d=parseFloat(den);
+  if(!d||isNaN(n)||isNaN(d))return '0.0';
+  return((n/d)*100).toFixed(1);
+};
+const ini=name=>name?name.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase():'??';
+
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('toast-ico').textContent=type==='err'?'✗':'✓';
+  t.className=`show ${type}`;
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.className='',3600);
+}
+function setLoading(on,sub='Connecting…'){
+  document.getElementById('overlay').classList.toggle('on',on);
+  document.getElementById('ov-sub').textContent=sub;
+  document.getElementById('search-btn').disabled=on;
+}
+function togCard(id){
+  const body=document.getElementById(`body-${id}`);
+  const chev=document.getElementById(`chev-${id}`);
+  const head=body.previousElementSibling;
+  const hidden=body.style.display==='none';
+  body.style.display=hidden?'':'none';
+  chev.classList.toggle('open',hidden);
+  head.classList.toggle('open',hidden);
+  head.classList.toggle('closed',!hidden);
+}
+function togExtra(btn){
+  const el=document.getElementById('personal-extra');
+  const open=el.classList.contains('open');
+  el.classList.toggle('open',!open);
+  btn.textContent=open?'Show more ↓':'Show less ↑';
+}
+function resetAll(){
+  document.getElementById('sap-input').value='';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('placeholder').style.display='';
+  document.getElementById('update-chip').style.display='none';
+  AO=null;L1S=[];
+  const ex=document.getElementById('personal-extra');
+  const btn=document.getElementById('extra-btn');
+  if(ex) ex.classList.remove('open');
+  if(btn) btn.textContent='Show more ↓';
+}
+
+function setUpdateChip(val){
+  const chip=document.getElementById('update-chip');
+  const valEl=document.getElementById('update-chip-val');
+  if(val&&val!=='—'){valEl.textContent=val;chip.style.display='flex';}
+  else chip.style.display='none';
+}
+
+async function fetchAO(){
+  const sap=document.getElementById('sap-input').value.trim();
+  if(!sap){toast('Please enter a SAP code','err');return;}
+  setLoading(true,'Fetching AO data');
+  try{
+    const res=await fetch(`${API_URL}?action=getAO&sap=${encodeURIComponent(sap)}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json=await res.json();
+    if(json.error) throw new Error(json.error);
+    AO=json.ao||{};
+    L1S=json.l1s||[];
+    setUpdateChip(g(AO,'Last updated on'));
+    renderDashboard();
+    toast(`Loaded: ${AO['X_SM_NM']||sap}`);
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{setLoading(false);}
+}
+
+
+function renderDashboard(){
+  document.getElementById('placeholder').style.display='none';
+  document.getElementById('dashboard').style.display='';
+  renderPersonal();renderBusiness();renderL1();renderMoM();
+}
+
+function renderPersonal(){
+  const name=g(AO,'X_SM_NM','Agency Officer');
+  const sap=g(AO,'X_SM_EMP_CD');
+  document.getElementById('ao-title').textContent=name;
+  document.getElementById('ao-sub').textContent=`SAP ${sap}`;
+  const statusVal=g(AO,'Status');
+  const sc=String(statusVal).toLowerCase();
+  const cls=sc.includes('active')?'badge-active':sc.includes('inactive')?'badge-inactive':'badge-other';
+  const statusHTML=`<span class="badge-status ${cls}"><span class="badge-dot"></span>${fmt(statusVal)}</span>`;
+  const summary=[
+    {lbl:'Zone',val:g(AO,'Zone')},
+    {lbl:'Region',val:g(AO,'Region')},
+    {lbl:'Branch',val:g(AO,'Branch')},
+    {lbl:'Designation',val:g(AO,'X_SM_DESIGNATION')},
+    {lbl:'Status',html:statusHTML},
+    {lbl:'Total L1s',val:g(AO,'Total L1'),cls:'warn'},
+  ];
+  document.getElementById('personal-summary').innerHTML=summary.map(f=>`<div class="kv"><div class="kv-label">${f.lbl}</div><div class="kv-val ${f.cls||''}">${f.html||fmt(f.val)}</div></div>`).join('');
+  const more=[['Department','Employee_Department'],['Grade','Grade'],['Date of Joining','Date_of_Joining'],['SU Code','Navjivan +AO SU']];
+  document.getElementById('personal-more').innerHTML=more.map(([l,k])=>`<div class="kv"><div class="kv-label">${l}</div><div class="kv-val">${fmt(g(AO,k))}</div></div>`).join('');
+}
+
+function renderBusiness(){
+  const cm=CURRENT_MONTH;
+  document.getElementById('biz-period-sub').textContent=`FY26 · Current Month: ${cm.lbl}`;
+  document.getElementById('fy-wrp-val').textContent=fmtN(g(AO,'WRP FY26',0));
+  document.getElementById('fy-nop-val').textContent=fmt(g(AO,'NOP FY26',0));
+  document.getElementById('mtd-wrp-val').textContent=fmtN(g(AO,cm.wrp,0));
+  document.getElementById('mtd-nop-val').textContent=fmt(g(AO,cm.nop,0));
+  document.getElementById('mtd-wrp-tag').textContent=cm.lbl;
+  document.getElementById('mtd-nop-tag').textContent=cm.lbl;
+  bizTab(curBizTab);
+}
+
+function bizTab(tab,btnEl){
+  curBizTab=tab;
+  document.querySelectorAll('.tabs .tab').forEach(b=>b.classList.remove('on'));
+  if(btnEl) btnEl.classList.add('on');
+  else document.querySelectorAll('.tabs .tab').forEach(b=>{if(b.textContent.toLowerCase().includes(tab==='self'?'self':'l1'))b.classList.add('on');});
+  let fields;
+  if(tab==='self'){
+    fields=[
+      {lbl:'Self-Sourced WRP',val:fmtN(g(AO,'Self Sourced WRP',0)),cls:'maroon',hint:''},
+      {lbl:'Self-Sourced NOP',val:fmt(g(AO,'Self Sourced NOP',0)),cls:'',hint:''},
+    ];
+  }else{
+    fields=[
+      {lbl:'L1 WRP',val:fmtN(g(AO,'L1 WRP',0)),cls:'ok',hint:''},
+      {lbl:'L1 NOP',val:fmt(g(AO,'L1 NOP',0)),cls:'',hint:''},
+    ];
+  }
+  document.getElementById('biz-tab').innerHTML=fields.map(f=>`
+    <div class="kv" style="padding:14px 16px">
+      <div class="kv-label">${f.lbl}</div>
+      <div class="kv-val ${f.cls}" style="font-size:20px;margin:4px 0 3px">${f.val}</div>
+      <div style="font-size:10.5px;color:var(--muted);font-family:var(--ff-body)">${f.hint}</div>
+    </div>`).join('');
+}
+
+function renderL1(){
+  document.getElementById('l1-sub').textContent=`${L1S.length} Insurance Manager${L1S.length!==1?'s':''}`;
+  const list=document.getElementById('l1-list');
+  if(!L1S.length){
+    list.innerHTML=`<div class="empty on"><div class="eico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><h4>No L1s Found</h4><p>No Insurance Managers are mapped to this AO.</p></div>`;
+    return;
+  }
+  list.innerHTML=L1S.map((im,i)=>buildL1Card(im,i)).join('');
+}
+
+function buildL1Card(im,i){
+  const curIdx=MONTHS.findIndex(m=>m.key===CURRENT_MONTH.key);
+  const imMtdWrp=parseFloat(im[CURRENT_MONTH.im_wrp])||0;
+  const imMtdNop=im[CURRENT_MONTH.im_nop]||0;
+
+  const L1_ROWS=[
+    {lbl:'WRP',      fn:m=>fmtN(parseFloat(im[m.im_wrp])||0)},
+    {lbl:'NOP',      fn:m=>fmt(im[m.im_nop]||0)},
+    {lbl:'Non-Par %',fn:m=>`<span class="tag tag-np">${pct(im[m.np]||0,im[m.im_wrp]||1)}%</span>`},
+    {lbl:'Par %',    fn:m=>`<span class="tag tag-par">${pct(im[m.par]||0,im[m.im_wrp]||1)}%</span>`},
+    {lbl:'ULIP %',   fn:m=>`<span class="tag tag-ul">${pct(im[m.ul]||0,im[m.im_wrp]||1)}%</span>`},
+  ];
+
+  const theadHtml=`<thead><tr><th>Metric</th>${MONTHS.map((m,j)=>`<th class="${j===curIdx?'cur':''}">${m.lbl}${j===curIdx?'<span class="now-badge">NOW</span>':''}</th>`).join('')}</tr></thead>`;
+  const tbodyHtml=`<tbody>${L1_ROWS.map(r=>`<tr><td>${r.lbl}</td>${MONTHS.map((m,j)=>`<td class="${j===curIdx?'cur':''}">${r.fn(m)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+  const details=[['SAP','L1 SAP'],['Name','L1 Name'],['DOJ','DOJ'],['ST Code','ST Code'],['SU Code','SU Code'],['Region','Region'],['Zone','Zone'],['SU Name','SU Name'],['Designation','Design']];
+
+  return `<div class="l1-card">
+    <div class="l1-head" onclick="togL1(${i})">
+      <div class="l1-info">
+        <div class="l1-avatar">${ini(g(im,'L1 Name','?'))}</div>
+        <div><div class="l1-name">${g(im,'L1 Name')}</div><div class="l1-meta">${g(im,'L1 SAP')} · ${g(im,'Design')}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="l1-pills">
+          <div class="l1-pill"><div class="pv">${fmtN(g(im,'IM WRP',0))}</div><div class="pl">YTD WRP</div></div>
+          <div class="l1-pill"><div class="pv">${fmt(g(im,'IM NOP',0))}</div><div class="pl">YTD NOP</div></div>
+        </div>
+        <svg class="l1-chev" id="l1c${i}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="l1-body" id="l1b${i}">
+      <div class="sec-label">IM Details</div>
+      <div class="kv-grid" style="margin-bottom:16px">${details.map(([l,k])=>`<div class="kv"><div class="kv-label">${l}</div><div class="kv-val">${fmt(g(im,k))}</div></div>`).join('')}</div>
+      <div class="sec-label">Summary</div>
+      <div class="mc-row">
+        <div class="mc c-maroon"><div class="mc-label">YTD WRP</div><div class="mc-val">${fmtN(g(im,'IM WRP',0))}</div></div>
+        <div class="mc c-grey">  <div class="mc-label">YTD NOP</div><div class="mc-val">${fmt(g(im,'IM NOP',0))}</div></div>
+        <div class="mc c-ok">    <div class="mc-label">${CURRENT_MONTH.lbl} WRP</div><div class="mc-val">${fmtN(imMtdWrp)}</div></div>
+        <div class="mc c-warn">  <div class="mc-label">${CURRENT_MONTH.lbl} NOP</div><div class="mc-val">${fmt(imMtdNop)}</div></div>
+      </div>
+      <div class="sec-label">Month-on-Month</div>
+      <div class="mom-wrap"><table class="mom-tbl">${theadHtml}${tbodyHtml}</table></div>
+    </div>
+  </div>`;
+}
+
+function togL1(i){
+  const b=document.getElementById(`l1b${i}`);
+  const c=document.getElementById(`l1c${i}`);
+  const open=b.classList.contains('open');
+  b.classList.toggle('open',!open);
+  if(c) c.style.transform=open?'':'rotate(180deg)';
+}
+
+function renderMoM(){
+  const curIdx=MONTHS.findIndex(m=>m.key===CURRENT_MONTH.key);
+  const theadHtml=`<thead><tr><th>Metric</th>${MONTHS.map((m,i)=>`<th class="${i===curIdx?'cur':''}">${m.lbl}${i===curIdx?'<span class="now-badge">NOW</span>':''}</th>`).join('')}</tr></thead>`;
+  const ROWS=[
+    {lbl:'WRP',         fn:m=>fmtN(g(AO,m.wrp,0))},
+    {lbl:'NOP',         fn:m=>fmt(g(AO,m.nop,0))},
+    {lbl:'Self-Src NOP',fn:m=>fmt(g(AO,m.ss,0))},
+    {lbl:'L1 Hired',    fn:m=>fmt(g(AO,m.l1h,0))},
+    {lbl:'Non-Par %',   fn:m=>`<span class="tag tag-np">${pct(g(AO,m.np,0),g(AO,m.wrp,1))}%</span>`},
+    {lbl:'Par %',       fn:m=>`<span class="tag tag-par">${pct(g(AO,m.par,0),g(AO,m.wrp,1))}%</span>`},
+    {lbl:'ULIP %',      fn:m=>`<span class="tag tag-ul">${pct(g(AO,m.ul,0),g(AO,m.wrp,1))}%</span>`},
+  ];
+  const tbodyHtml=`<tbody>${ROWS.map(r=>`<tr><td>${r.lbl}</td>${MONTHS.map((m,i)=>`<td class="${i===curIdx?'cur':''}">${r.fn(m)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+  document.getElementById('mom-table').innerHTML=theadHtml+tbodyHtml;
+}
+
+
+document.addEventListener('DOMContentLoaded',()=>document.getElementById('sap-input').focus());
+</script>
+</body>
+</html>
