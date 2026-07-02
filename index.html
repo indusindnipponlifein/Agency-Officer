@@ -424,7 +424,7 @@ input{font-family:var(--ff-body)}
               <line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/>
             </svg>
           </div>
-          <div class="scard-htxt"><h3>Business Performance</h3><div class="sub" id="biz-period-sub">FY26 · MTD Highlighted</div></div>
+          <div class="scard-htxt"><h3>Business Performance</h3><div class="sub" id="biz-period-sub">FY27 · MTD Highlighted</div></div>
         </div>
         <div class="scard-chev open" id="chev-business">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
@@ -433,13 +433,13 @@ input{font-family:var(--ff-body)}
       <div class="scard-body" id="body-business">
         <div class="biz-overview">
           <div class="biz-card c-maroon">
-            <div class="biz-period">FY26</div>
+            <div class="biz-period">FY27</div>
             <div class="biz-card-label">YTD WRP</div>
             <div class="biz-card-val" id="fy-wrp-val">—</div>
             
           </div>
           <div class="biz-card c-grey">
-            <div class="biz-period">FY26</div>
+            <div class="biz-period">FY27</div>
             <div class="biz-card-label">YTD NOP</div>
             <div class="biz-card-val" id="fy-nop-val">—</div>
             
@@ -537,7 +537,7 @@ const MONTHS=[
    as the "current" month for MTD figures.
    Valid values: 'Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'
    ───────────────────────────────────────────────────────────── */
-const MTD_KEY = 'Mar';   // ← change this to update MTD month
+const MTD_KEY = 'Jul';   // ← change this to update MTD month
 
 const CURRENT_MONTH = MONTHS.find(m => m.key === MTD_KEY) || MONTHS[MONTHS.length - 1];
 
@@ -661,8 +661,8 @@ function renderPersonal(){
 function renderBusiness(){
   const cm=CURRENT_MONTH;
   document.getElementById('biz-period-sub').textContent=`FY26 · Current Month: ${cm.lbl}`;
-  document.getElementById('fy-wrp-val').textContent=fmtN(g(AO,'WRP FY26',0));
-  document.getElementById('fy-nop-val').textContent=fmt(g(AO,'NOP FY26',0));
+  document.getElementById('fy-wrp-val').textContent=fmtN(g(AO,'WRP FY27',0));
+  document.getElementById('fy-nop-val').textContent=fmt(g(AO,'NOP FY27',0));
   document.getElementById('mtd-wrp-val').textContent=fmtN(g(AO,cm.wrp,0));
   document.getElementById('mtd-nop-val').textContent=fmt(g(AO,cm.nop,0));
   document.getElementById('mtd-wrp-tag').textContent=cm.lbl;
